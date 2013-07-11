@@ -4,7 +4,7 @@
     <groupId>org.elasticsearch</groupId>
     <artifactId>xterms-filter</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>0.1</version>
     <name>xterms-filter</name>
     <properties>
         <elasticsearch.version>0.90.0</elasticsearch.version>
