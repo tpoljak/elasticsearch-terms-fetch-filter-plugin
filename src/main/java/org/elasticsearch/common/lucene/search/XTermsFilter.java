@@ -4,15 +4,12 @@ import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.Bits;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
-import org.elasticsearch.index.query.fetch.*;
+import org.elasticsearch.index.query.fetch.XTermsFetch;
 
 import java.io.IOException;
+import java.util.List;
 
 public class XTermsFilter extends Filter {
-
-    private static ESLogger logger = Loggers.getLogger(XTermsFilter.class);
 
     private final XTermsFetch fetch;
 
@@ -29,8 +26,13 @@ public class XTermsFilter extends Filter {
 
     private Filter getFilter() {
         if (this.filter == null) {
-            this.filter = fetch.getFieldMapper().termsFilter(fetch.getTerms(), fetch.getQueryParseContext());
-        } 
+            List<Object> terms = fetch.getTerms();
+            if (terms.size() > 0) {
+                this.filter = fetch.getFieldMapper().termsFilter(terms, fetch.getQueryParseContext());
+            } else {
+                this.filter = Queries.MATCH_NO_FILTER;
+            }
+        }
         return filter;
     }
 
