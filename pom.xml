@@ -1,22 +1,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <name>elasticsearch-terms-fetch-filter</name>
     <groupId>org.elasticsearch</groupId>
-    <artifactId>xterms-filter</artifactId>
+    <artifactId>elasticsearch-terms-fetch-filter</artifactId>
+    <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <version>0.1</version>
-    <name>xterms-filter</name>
+    <description>TermsFilter implementation that fetches the terms from an external resource</description>
+    <inceptionYear>2013</inceptionYear>
+    <url>https://github.com/lmenezes/elasticsearch-terms-fetch-filter-plugin</url>
+    <scm>
+        <connection>scm:git:git://github.com/lmenezes/elasticsearch-terms-fetch-filter-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:lmenezes/elasticsearch-terms-fetch-filter-plugin.git
+        </developerConnection>
+        <url>https://github.com/lmenezes/elasticsearch-terms-fetch-filter-plugin</url>
+    </scm>
+
     <properties>
-        <elasticsearch.version>0.90.0</elasticsearch.version>
+        <elasticsearch.version>0.90.2</elasticsearch.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
-        <!-- Tests -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
@@ -42,25 +52,23 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <argLine>-Xmx1024m</argLine>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.11</version>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
                 <configuration>
-                    <includes>
-                        <include>**/*Tests.java</include>
-                    </includes>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -97,4 +105,34 @@
             </plugin>
         </plugins>
     </build>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>alr</id>
+            <name>Leonardo Menezes</name>
+            <email>mail@lmenezes.com</email>
+            <url>http://lmenezes.com/</url>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/lmenezes/elasticsearch-terms-fetch-filter-plugin/issues/</url>
+    </issueManagement>
 </project>
+
