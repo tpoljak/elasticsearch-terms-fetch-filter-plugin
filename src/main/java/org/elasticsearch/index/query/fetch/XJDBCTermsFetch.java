@@ -1,11 +1,17 @@
 package org.elasticsearch.index.query.fetch;
 
+import com.jolbox.bonecp.BoneCP;
+import com.jolbox.bonecp.BoneCPConfig;
 import org.elasticsearch.common.Nullable;
+import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.index.cache.filter.support.CacheKeyFilter;
 import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.index.query.QueryParseContext;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,17 +19,17 @@ import java.util.Map;
 
 public class XJDBCTermsFetch extends XTermsFetch {
 
-    private final String username;
-    private final String password;
+    private static final Map<String, BoneCP> pools = new HashMap<String, BoneCP>();
+    private final String poolKey;
     private final String query;
 
+    @Inject
     public XJDBCTermsFetch(String url, String query, String driver, String username, String password, CacheKeyFilter.Key key,
-                           FieldMapper fieldMapper, @Nullable QueryParseContext queryParseContext) throws ClassNotFoundException {
+                           FieldMapper fieldMapper, @Nullable QueryParseContext queryParseContext) throws ClassNotFoundException, SQLException {
         super(url, key, fieldMapper, queryParseContext);
-        Class.forName(driver);
-        this.username = username;
-        this.password = password;
+        this.poolKey = createPoolKey(url, driver);
         this.query = query;
+        initializePool(driver, url, username, password);
     }
 
     @Override
@@ -32,7 +38,7 @@ public class XJDBCTermsFetch extends XTermsFetch {
         Connection conn = null;
         PreparedStatement stmt = null;
         try {
-            conn = DriverManager.getConnection(url, username, password);
+            conn = pools.get(this.poolKey).getConnection();
             stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -56,5 +62,26 @@ public class XJDBCTermsFetch extends XTermsFetch {
             }
         }
         return terms;
+    }
+
+    // TODO: think about implications...
+    private String createPoolKey(String url, String driver) {
+        return (url.toLowerCase() + driver.toLowerCase());
+    }
+
+    private void initializePool(String driver, String url, String username, String password) throws ClassNotFoundException, SQLException {
+        if (!pools.containsKey(this.poolKey)) {
+            synchronized (pools) {
+                if (!pools.containsKey(this.poolKey)) {
+                    Class.forName(driver);
+                    BoneCPConfig config = new BoneCPConfig();
+                    config.setJdbcUrl(url);
+                    config.setUsername(username);
+                    config.setPassword(password);
+                    config.setMaxConnectionsPerPartition(20); // TODO: bring to config
+                    pools.put(this.poolKey, new BoneCP(config));
+                }
+            }
+        }
     }
 }

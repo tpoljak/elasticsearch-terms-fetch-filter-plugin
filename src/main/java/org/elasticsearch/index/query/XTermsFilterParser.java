@@ -9,9 +9,13 @@ import org.elasticsearch.index.Index;
 import org.elasticsearch.index.cache.filter.support.CacheKeyFilter;
 import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.index.mapper.MapperService;
-import org.elasticsearch.index.query.fetch.*;
+import org.elasticsearch.index.query.fetch.XJDBCTermsFetch;
+import org.elasticsearch.index.query.fetch.XRedisTermsFetch;
+import org.elasticsearch.index.query.fetch.XRestTermsFetch;
+import org.elasticsearch.index.query.fetch.XTermsFetch;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class XTermsFilterParser implements FilterParser {
@@ -149,6 +153,8 @@ public class XTermsFilterParser implements FilterParser {
                 termsFetch = new XJDBCTermsFetch(url, query, driver, username, password, cacheKey, fieldMapper, parseContext);
             } catch (ClassNotFoundException e) {
                 throw new QueryParsingException(parseContext.index(), "[xterms] driver [" + driver + "] was not found in classpath");
+            } catch (SQLException e) {
+                throw new QueryParsingException(parseContext.index(), "[xterms] error while opening connection with database[" + e.getMessage() + "]");
             }
         } else if (command != null) {
             validateRedisFetch(parseContext.index(), url, command, args);
